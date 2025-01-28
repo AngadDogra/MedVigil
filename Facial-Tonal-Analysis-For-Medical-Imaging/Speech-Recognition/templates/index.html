@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Sentiment Analyzer</title>
+</head>
+<body>
+    <h1>Speech Sentiment Analyzer</h1>
+    
+    <button id="recordButton">Record Speech</button>
+    <p id="status">Press "Record Speech" and speak.</p>
+    <p id="sentimentResult"></p>
+
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        let mediaRecorder;
+
+        recordButton.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+
+                    recordButton.innerText = 'Recording... Click to Stop';
+                    mediaRecorder.ondataavailable = async (event) => {
+                        const audioBlob = event.data;
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'audio.wav');
+                        
+                        try {
+                            const response = await fetch('/process_audio', {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            const result = await response.json();
+                            document.getElementById('status').innerText = result.error || 
+                                `Text: "${result.transcription}"`;
+                            document.getElementById('sentimentResult').innerText = 
+                                result.error || `Sentiment: ${result.sentiment}`;
+                        } catch (error) {
+                            document.getElementById('status').innerText = 'Error processing audio';
+                        }
+                    };
+
+                    recordButton.onclick = () => {
+                        mediaRecorder.stop();
+                        recordButton.innerText = 'Record Speech';
+                    };
+                })
+                .catch(() => {
+                    document.getElementById('status').innerText = 'Permission denied for microphone';
+                });
+        });
+    </script>
+</body>
+</html>
