@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Recorder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    audio {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio Recorder</h1>
+  <button id="recordBtn">Start Recording</button>
+  <button id="stopBtn" disabled>Stop Recording</button>
+  <audio id="audioPlayer" controls></audio>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    recordBtn.addEventListener('click', async () => {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+
+      mediaRecorder.addEventListener('dataavailable', event => {
+        audioChunks.push(event.data);
+      });
+    });
+
+    stopBtn.addEventListener('click', () => {
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+
+      mediaRecorder.addEventListener('stop', () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioURL = URL.createObjectURL(audioBlob);
+        audioPlayer.src = audioURL;
+
+        // Save the audio file to the server
+        const formData = new FormData();
+        formData.append('audio', audioBlob);
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        })
+          .then(response => response.text())
+          .then(data => {
+            console.log('Audio saved successfully:', data);
+          })
+          .catch(error => {
+            console.error('Error saving audio:', error);
+          });
+
+        audioChunks = [];
+      });
+    });
+  </script>
+</body>
+</html>
