@@ -64,5 +64,27 @@
         </div>
     </div>
 
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-analytics.js";
+        import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-storage.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkdc52GXahXqesorzt5C88M_gnneYfEZ8",
+            authDomain: "medvigil-backend.firebaseapp.com",
+            projectId: "medvigil-backend",
+            storageBucket: "medvigil-backend.firebasestorage.app",
+            messagingSenderId: "1006273452623",
+            appId: "1:1006273452623:web:19edb3cad6adef5de0683a",
+            measurementId: "G-0E9BYQ9H9C"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const storage = getStorage(app); // Initialize Firebase Storage
+    </script>
 </body>
 </html>
